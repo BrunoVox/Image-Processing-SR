@@ -1,11 +1,11 @@
 import numpy as np 
 from lrdict import samples
 from types import SimpleNamespace
+from skimage.color import rgb2ycbcr, rgb2gray
 from skimage.io import imread
 from sklearn.feature_extraction.image import extract_patches_2d
 from os import listdir
 import pickle
-import gc
 from spams import trainDL, lasso
 
 lmbd = 0.1
@@ -26,8 +26,9 @@ else:
     print('Undercomplete dictionary ; Problem')
 
 for i in range(highres.n_of_files):
-    temp_imread = imread('{}{}'.format(highres.dir, listdir(highres.dir)[i]), as_gray=True)
-    temp_patch = extract_patches_2d(temp_imread, (9,9))
+    temp_imread = imread('{}{}'.format(highres.dir, listdir(highres.dir)[i]))
+    temp_imread = rgb2gray(temp_imread)
+    temp_patch = extract_patches_2d(temp_imread[:,:], (9,9))
 
     patch = np.zeros((N, number_patches))
            
@@ -39,11 +40,11 @@ for i in range(highres.n_of_files):
 
 print('Training HR dictionary!!')
 
-highres.signal_forD = np.asfortranarray(highres.signal_forD)
-highres.dictionary = trainDL(X=highres.signal_forD, lambda1=lmbd, K=128, numThreads=1)
+highres.signal = np.asfortranarray(highres.signal_forD)
+highres.dictionary = trainDL(X=highres.signal, lambda1=lmbd, K=1024, numThreads=1, batchsize=64, iter=100)
 
 with open('obj/'+ 'hrdict' + '.pkl', 'wb') as f:
     pickle.dump(highres.dictionary, f, pickle.HIGHEST_PROTOCOL)
 
 with open('obj/'+ 'hrsignal' + '.pkl', 'wb') as f:
-    pickle.dump(highres.signal_forD, f, pickle.HIGHEST_PROTOCOL)
+    pickle.dump(highres.signal, f, pickle.HIGHEST_PROTOCOL)

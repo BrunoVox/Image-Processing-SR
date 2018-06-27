@@ -1,5 +1,6 @@
 import numpy as np 
 from skimage.transform import rescale
+from skimage.color import rgb2gray
 from skimage.io import imsave, imread
 from types import SimpleNamespace
 from os import listdir
@@ -14,8 +15,9 @@ test.n_of_files = len(listdir(test.dir))
 
 for i in range(0, test.n_of_files):
     temp_imread = imread('{}{}'.format(test.dir, listdir(test.dir)[i]))
-    temp = rescale(temp_imread, 1/3)
+    temp_imread = rgb2gray(temp_imread)
+    # temp = rescale(temp_imread, 1/9)
     name = list(listdir(test.dir)[i])
-    name[5] = '3'
+    name[5] = '0'
     name = ''.join(name)
-    imsave('{}{}'.format(dstest.dir, name), temp)
+    imsave('{}{}'.format(dstest.dir, name), temp_imread)
